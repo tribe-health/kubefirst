@@ -1,3 +1,4 @@
+
 package pkg
 
 import (
@@ -90,4 +91,8 @@ func SetupProgress(numTrackers int) {
 	pw.Style().Visibility.TrackerOverall = !*flagHideOverallTracker
 	pw.Style().Visibility.Value = !*flagHideValue
 	go pw.Render()
+}
+
+func LogMessage(message string){
+	pw.Log(message)
 }

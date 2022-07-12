@@ -1,0 +1,14 @@
+
+apiVersion: v1     
+kind: Pod                               
+metadata:           
+  name: argo-mock
+  labels:
+    app.kubernetes.io/name: argocd-server
+
+spec:               
+  containers:
+  - name: webserver  
+    image: nginx:latest 
+    ports:               
+    - containerPort: 80
