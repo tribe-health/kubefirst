@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"fmt"
+	"github.com/go-git/go-git/v5/plumbing/transport"
 	"io/ioutil"
 	"log"
 	"os"
@@ -27,20 +28,25 @@ func prepareKubefirstTemplateRepo(config *configs.Config, githubOrg, repoName st
 	repoUrl := fmt.Sprintf("https://github.com/%s/%s-template", githubOrg, repoName)
 	directory := fmt.Sprintf("%s/%s", config.K1FolderPath, repoName)
 	log.Println("git clone", repoUrl, directory)
-	log.Println("git clone -b ", branch, repoUrl, directory)
+	log.Println("git clone -b", branch, repoUrl, directory)
 
 	repo, err := git.PlainClone(directory, false, &git.CloneOptions{
 		URL:           repoUrl,
 		ReferenceName: plumbing.NewBranchReferenceName(branch),
 		SingleBranch:  true,
 	})
+
+	// treat some git errors
 	if err == git.ErrRepositoryAlreadyExists {
 		log.Printf("github repository %s-template was previously cloned from github. warning: %s", repoName, err)
 		repo, err = git.PlainOpen(directory)
 		if err != nil {
 			log.Panic(err)
 		}
-	} else {
+	} else if err == transport.ErrAuthenticationRequired {
+		log.Println("this repository requires authentication, and we were unable to clone it.")
+		log.Panic(err)
+	} else if err != nil {
 		log.Panic(err)
 	}
 
