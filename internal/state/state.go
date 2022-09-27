@@ -3,7 +3,7 @@ package state
 import (
 	"fmt"
 	"github.com/kubefirst/kubefirst/configs"
-	"github.com/kubefirst/kubefirst/internal/aws"
+	"github.com/kubefirst/kubefirst/internal/services"
 	"github.com/spf13/viper"
 	"log"
 )
@@ -17,7 +17,7 @@ func UploadKubefirstToStateStore(dryRun bool) error {
 	config := configs.ReadConfig()
 	// upload kubefirst config to user state S3 bucket
 	stateStoreBucket := viper.GetString("bucket.state-store.name")
-	err := aws.UploadFile(stateStoreBucket, config.KubefirstConfigFileName, config.KubefirstConfigFilePath)
+	err := services.UploadFile(stateStoreBucket, config.KubefirstConfigFileName, config.KubefirstConfigFilePath)
 	if err != nil {
 		return fmt.Errorf("unable to upload Kubefirst cofiguration file to the S3 bucket, error is: %v", err)
 	}

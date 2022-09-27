@@ -72,10 +72,7 @@ func ReadConfig() *Config {
 		log.Panic(err)
 	}
 
-	config.K1FolderPath = fmt.Sprintf("%s/.k1", homePath)
-	if err != nil {
-		log.Panic(err)
-	}
+	config.K1FolderPath = fmt.Sprintf("%s/.k1/", homePath)
 
 	config.KubefirstConfigFileName = ".kubefirst"
 	config.KubefirstConfigFilePath = fmt.Sprintf("%s/.kubefirst", homePath)

@@ -1,4 +1,4 @@
-package aws
+package services
 
 import (
 	"context"
@@ -42,6 +42,16 @@ type ARecord struct {
 	RecordType  string
 	TTL         *int64
 	AliasTarget *route53Types.AliasTarget
+}
+
+type AwsService struct {
+	S3Client *manager.Uploader
+}
+
+func NewAwsService(s3Client *manager.Uploader) AwsService {
+	return AwsService{
+		S3Client: s3Client,
+	}
 }
 
 // NewAws instantiate a new AWS configuration. This function is used to provide initial connection to AWS services.
@@ -439,6 +449,7 @@ func CreateBucket(dryRun bool, bucketName string) {
 }
 
 // UploadFile receives a bucket name, a file name and upload it to AWS S3.
+// Deprecated: use NewUploadFile to avoid opening new connection on each request
 func UploadFile(bucketName string, remoteFilename string, localFilename string) error {
 
 	// todo: use method approach to avoid new AWS client initializations
@@ -465,6 +476,48 @@ func UploadFile(bucketName string, remoteFilename string, localFilename string) 
 	)
 	if err != nil {
 		return fmt.Errorf("failed to upload file, %v", err)
+	}
+	log.Printf("file succesfully uploaded to, %s\n", result.Location)
+	return nil
+}
+
+// NewUploadFile receives a bucket name, a file name and upload it to AWS S3.
+func (service AwsService) NewUploadFile(bucketName string, prefix string, localFilename string, remoteFilename string) error {
+
+	file, err := os.Open(localFilename)
+	if err != nil {
+		fmt.Println(localFilename)
+		return fmt.Errorf("failed to open file %q, %v", localFilename, err)
+	}
+
+	// Upload file to S3
+	var result *manager.UploadOutput
+	// todo: test it with prefix like ""
+	if len(prefix) > 0 {
+		result, err = service.S3Client.Upload(
+			context.Background(),
+			&s3.PutObjectInput{
+				Bucket: aws.String(bucketName),
+				Key:    aws.String(filepath.Join(prefix, remoteFilename)),
+				Body:   file,
+			},
+		)
+		if err != nil {
+			return fmt.Errorf("failed to upload file, %v", err)
+		}
+	} else {
+		result, err = service.S3Client.Upload(
+			context.Background(),
+			&s3.PutObjectInput{
+				Bucket: aws.String(bucketName),
+				Key:    aws.String(remoteFilename),
+				Body:   file,
+			},
+		)
+		if err != nil {
+			return fmt.Errorf("failed to upload file, %v", err)
+		}
+
 	}
 	log.Printf("file succesfully uploaded to, %s\n", result.Location)
 	return nil

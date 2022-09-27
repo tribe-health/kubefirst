@@ -1,4 +1,4 @@
-package aws_test
+package services_test
 
 import (
 	"context"
@@ -12,7 +12,7 @@ import (
 	"github.com/aws/aws-sdk-go-v2/service/s3"
 	s3Types "github.com/aws/aws-sdk-go-v2/service/s3/types"
 	"github.com/kubefirst/kubefirst/configs"
-	"github.com/kubefirst/kubefirst/internal/aws"
+	"github.com/kubefirst/kubefirst/internal/services"
 	"github.com/kubefirst/kubefirst/pkg"
 	"log"
 	"os"
@@ -34,13 +34,13 @@ func TestAreS3BucketsLiveIntegration(t *testing.T) {
 		t.Error(err)
 	}
 
-	currentInstallationBuckets := aws.ListBucketsInUse()
+	currentInstallationBuckets := services.ListBucketsInUse()
 
 	if len(currentInstallationBuckets) == 0 {
 		t.Error("there are no available buckets to be validated")
 	}
 
-	awsConfig, err := aws.NewAws()
+	awsConfig, err := services.NewAws()
 	if err != nil {
 		t.Errorf("unable to connect to AWS, error is: %s", err)
 	}
@@ -70,9 +70,9 @@ func TestAreS3BucketsDestroyedIntegration(t *testing.T) {
 		t.Skip("skipping integration test")
 	}
 
-	currentInstallationBuckets := aws.ListBucketsInUse()
+	currentInstallationBuckets := services.ListBucketsInUse()
 
-	awsConfig, err := aws.NewAws()
+	awsConfig, err := services.NewAws()
 	if err != nil {
 		t.Errorf("unable to connect to AWS, error is: %s", err)
 	}
@@ -98,7 +98,7 @@ func TestIsVPCByTagDestroyedIntegration(t *testing.T) {
 
 	clusterName := os.Getenv("CLUSTER_NAME")
 
-	awsConfig, err := aws.NewAws()
+	awsConfig, err := services.NewAws()
 	if err != nil {
 		t.Error(err)
 	}
@@ -138,7 +138,7 @@ func TestLoadBalancerByTagIntegration(t *testing.T) {
 
 	clusterName := os.Getenv("CLUSTER_NAME")
 
-	awsConfig, err := aws.NewAws()
+	awsConfig, err := services.NewAws()
 	if err != nil {
 		t.Error(err)
 	}
@@ -191,7 +191,7 @@ func TestIsLoadBalancerByTagDestroyedIntegration(t *testing.T) {
 		t.Skip("skipping integration test")
 	}
 
-	awsConfig, err := aws.NewAws()
+	awsConfig, err := services.NewAws()
 	if err != nil {
 		t.Error(err)
 	}
@@ -225,7 +225,7 @@ func TestIsKMSKeyAliasDestroyedIntegration(t *testing.T) {
 		return
 	}
 
-	awsConfig, err := aws.NewAws()
+	awsConfig, err := services.NewAws()
 	if err != nil {
 		t.Error(err)
 	}
@@ -261,7 +261,7 @@ func TestIsEKSDestroyedIntegration(t *testing.T) {
 		return
 	}
 
-	awsConfig, err := aws.NewAws()
+	awsConfig, err := services.NewAws()
 	if err != nil {
 		t.Error(err)
 	}
@@ -293,7 +293,7 @@ func TestAreEC2VolumesDestroyedIntegration(t *testing.T) {
 		return
 	}
 
-	awsConfig, err := aws.NewAws()
+	awsConfig, err := services.NewAws()
 	if err != nil {
 		t.Error(err)
 	}

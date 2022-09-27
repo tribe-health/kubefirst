@@ -7,6 +7,7 @@ import (
 	"github.com/kubefirst/kubefirst/internal/handlers"
 	"github.com/kubefirst/kubefirst/internal/k8s"
 	"github.com/kubefirst/kubefirst/internal/progressPrinter"
+	"github.com/kubefirst/kubefirst/internal/services"
 	"github.com/kubefirst/kubefirst/internal/terraform"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
@@ -108,8 +109,9 @@ var destroyCmd = &cobra.Command{
 		// destroy hosted zone
 		if destroyFlags.HostedZoneDelete {
 			hostedZone := viper.GetString("aws.hostedzonename")
-			awsHandler := handlers.NewAwsHandler(hostedZone, destroyFlags)
-			err := awsHandler.HostedZoneDelete()
+			awsService := services.NewAwsService(nil)
+			awsHandler := handlers.NewAwsHandler(awsService, &destroyFlags)
+			err := awsHandler.HostedZoneDelete(hostedZone)
 			if err != nil {
 				// if error, just log it
 				log.Println(err)

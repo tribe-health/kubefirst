@@ -4,12 +4,12 @@ import (
 	"bytes"
 	"errors"
 	"fmt"
+	"github.com/kubefirst/kubefirst/internal/services"
 	"log"
 	"os"
 	"strings"
 
 	"github.com/kubefirst/kubefirst/configs"
-	"github.com/kubefirst/kubefirst/internal/aws"
 	"github.com/kubefirst/kubefirst/internal/reports"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
@@ -37,7 +37,7 @@ re-create Kubefirst base files. To destroy cloud resources you need to specify a
 			return errors.New("this process will fully delete cloud buckets, and we would like you to confirm the deletion providing the --destroy-confirm when calling the clean command")
 		}
 
-		err = aws.DestroyBucketsInUse(false, destroyBuckets && destroyConfirm)
+		err = services.DestroyBucketsInUse(false, destroyBuckets && destroyConfirm)
 		if err != nil {
 			return err
 		}

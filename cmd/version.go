@@ -17,5 +17,6 @@ var versionCmd = &cobra.Command{
 	Long:  `All software has versions. This is kubefirst's`,
 	Run: func(cmd *cobra.Command, args []string) {
 		fmt.Printf("\n\nkubefirst-cli golang utility version: %s\n\n", configs.K1Version)
+		fmt.Printf("\n\nkubefirst-cli golang utility version: %s\n\n", configs.K1Version)
 	},
 }

@@ -3,13 +3,13 @@ package cmd
 import (
 	"errors"
 	"fmt"
+	"github.com/kubefirst/kubefirst/internal/services"
 	"log"
 	"os"
 	"strings"
 	"time"
 
 	"github.com/kubefirst/kubefirst/configs"
-	"github.com/kubefirst/kubefirst/internal/aws"
 	"github.com/kubefirst/kubefirst/internal/downloadManager"
 	"github.com/kubefirst/kubefirst/internal/flagset"
 	"github.com/kubefirst/kubefirst/internal/progressPrinter"
@@ -69,7 +69,7 @@ to quickly create a Cobra application.`,
 
 		if len(awsFlags.AssumeRole) > 0 {
 			log.Println("calling assume role")
-			err := aws.AssumeRole(awsFlags.AssumeRole)
+			err := services.AssumeRole(awsFlags.AssumeRole)
 			if err != nil {
 				log.Println(err)
 				return err
@@ -137,14 +137,14 @@ to quickly create a Cobra application.`,
 
 		//! tracker 1
 		log.Println("getting aws account information")
-		aws.GetAccountInfo()
+		services.GetAccountInfo()
 		log.Printf("aws account id: %s\naws user arn: %s", viper.GetString("aws.accountid"), viper.GetString("aws.userarn"))
 		progressPrinter.IncrementTracker("step-account", 1)
 
 		//! tracker 2
 		// hosted zone id
 		// So we don't have to keep looking it up from the domain name to use it
-		hostedZoneId := aws.GetDNSInfo(awsFlags.HostedZoneName)
+		hostedZoneId := services.GetDNSInfo(awsFlags.HostedZoneName)
 		// viper values set in above function
 		log.Println("hostedZoneId:", hostedZoneId)
 		progressPrinter.IncrementTracker("step-dns", 1)
@@ -153,7 +153,7 @@ to quickly create a Cobra application.`,
 		// todo: this doesn't default to testing the dns check
 		skipHostedZoneCheck := viper.GetBool("init.hostedzonecheck.enabled")
 		if !skipHostedZoneCheck {
-			hostedZoneLiveness := aws.TestHostedZoneLiveness(globalFlags.DryRun, awsFlags.HostedZoneName, hostedZoneId)
+			hostedZoneLiveness := services.TestHostedZoneLiveness(globalFlags.DryRun, awsFlags.HostedZoneName, hostedZoneId)
 			if !hostedZoneLiveness {
 				log.Panic("Fail to check the Liveness of HostedZone, we need a valid public HostedZone on the same AWS account that Kubefirst will be installed.")
 			}
@@ -167,7 +167,7 @@ to quickly create a Cobra application.`,
 		//* for state and artifacts on open source?
 		//* hitting a bucket limit on an install might deter someone
 		log.Println("creating buckets for state and artifacts")
-		aws.BucketRand(globalFlags.DryRun)
+		services.BucketRand(globalFlags.DryRun)
 		progressPrinter.IncrementTracker("step-buckets", 1)
 		log.Println("BucketRand() complete")
 

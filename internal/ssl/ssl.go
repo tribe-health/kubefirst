@@ -3,6 +3,7 @@ package ssl
 import (
 	"context"
 	"fmt"
+	"github.com/kubefirst/kubefirst/internal/services"
 	"io/ioutil"
 	"log"
 	"os"
@@ -11,7 +12,6 @@ import (
 
 	"github.com/ghodss/yaml"
 	"github.com/kubefirst/kubefirst/configs"
-	"github.com/kubefirst/kubefirst/internal/aws"
 	"github.com/kubefirst/kubefirst/internal/k8s"
 	"github.com/kubefirst/kubefirst/pkg"
 	"github.com/spf13/viper"
@@ -89,7 +89,7 @@ func GetBackupCertificates(includeMetaphorApps bool) (string, error) {
 	log.Println("GetBackupCertificates called")
 
 	bucketName := fmt.Sprintf("k1-%s", viper.GetString("aws.hostedzonename"))
-	aws.CreateBucket(false, bucketName)
+	services.CreateBucket(false, bucketName)
 
 	config := configs.ReadConfig()
 	namespaces := getNamespacesToBackupSSL()
@@ -107,7 +107,7 @@ func GetBackupCertificates(includeMetaphorApps bool) (string, error) {
 	for _, cert := range certificates {
 		fullPath := strings.Replace(cert, config.CertsPath, "/certs", 1)
 		log.Println(fullPath)
-		err = aws.UploadFile(bucketName, fullPath, cert)
+		err = services.UploadFile(bucketName, fullPath, cert)
 		if err != nil {
 			log.Println("there is an issue to uploaded your certificate to the S3 bucket")
 			log.Panic(err)
@@ -123,7 +123,7 @@ func GetBackupCertificates(includeMetaphorApps bool) (string, error) {
 	for _, secret := range secrets {
 		fullPath := strings.Replace(secret, config.CertsPath, "/secrets", 1)
 		log.Println(fullPath)
-		if err = aws.UploadFile(bucketName, fullPath, secret); err != nil {
+		if err = services.UploadFile(bucketName, fullPath, secret); err != nil {
 			return "", err
 		}
 	}
@@ -137,7 +137,7 @@ func GetBackupCertificates(includeMetaphorApps bool) (string, error) {
 	for _, clusterIssuer := range clusterIssuers {
 		fullPath := strings.Replace(clusterIssuer, config.CertsPath, "/clusterissuers", 1)
 		log.Println(fullPath)
-		if err = aws.UploadFile(bucketName, fullPath, clusterIssuer); err != nil {
+		if err = services.UploadFile(bucketName, fullPath, clusterIssuer); err != nil {
 			return "", err
 		}
 	}
@@ -170,7 +170,7 @@ func RestoreSSL(dryRun bool, includeMetaphorApps bool) error {
 		}
 	}
 	bucketName := fmt.Sprintf("k1-%s", viper.GetString("aws.hostedzonename"))
-	err := aws.DownloadBucket(bucketName, config.CertsPath)
+	err := services.DownloadBucket(bucketName, config.CertsPath)
 	if err != nil {
 		return err
 	}

@@ -2,9 +2,12 @@ package cmd
 
 import (
 	"fmt"
+	"github.com/aws/aws-sdk-go-v2/feature/s3/manager"
+	"github.com/aws/aws-sdk-go-v2/service/s3"
 	"github.com/kubefirst/kubefirst/configs"
-	"github.com/kubefirst/kubefirst/internal/aws"
+	"github.com/kubefirst/kubefirst/internal/handlers"
 	"github.com/kubefirst/kubefirst/internal/reports"
+	"github.com/kubefirst/kubefirst/internal/services"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 	"log"
@@ -46,9 +49,26 @@ var k1state = &cobra.Command{
 			return
 		}
 
+		//
+
+		awsConfig, err := services.NewAws()
+		if err != nil {
+			log.Println(err)
+		}
+
+		s3Client := manager.NewUploader(s3.NewFromConfig(awsConfig))
+		awsService := services.NewAwsService(s3Client)
+		awsHandler := handlers.NewAwsHandler(awsService, nil)
+
 		config := configs.ReadConfig()
 		if push {
-			err = aws.UploadFile(bucketName, config.KubefirstConfigFileName, config.KubefirstConfigFilePath)
+			err := awsHandler.UploadFile(bucketName, config.KubefirstConfigFileName, config.KubefirstConfigFilePath, "")
+			if err != nil {
+				fmt.Println(err)
+				return
+			}
+
+			err = awsHandler.UploadFolder(config.K1FolderPath, "k1/", bucketName)
 			if err != nil {
 				fmt.Println(err)
 				return
@@ -68,7 +88,7 @@ var k1state = &cobra.Command{
 				return
 			}
 
-			err := aws.DownloadS3File(bucketName, config.KubefirstConfigFileName)
+			err := services.DownloadS3File(bucketName, config.KubefirstConfigFileName)
 			if err != nil {
 				fmt.Println(err)
 				return
