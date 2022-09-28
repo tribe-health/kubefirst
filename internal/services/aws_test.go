@@ -329,15 +329,14 @@ func TestAwsServiceNewUploadFile(t *testing.T) {
 	s3Client := pkg.MockS3{}
 	awsService := services.NewAwsService(s3Client)
 
-	// create temporary file in memory for test
+	// create temporary file for test
 	tmpFile, err := os.CreateTemp("", "tmp-file.*.ext")
 	if err != nil {
 		t.Error(err)
 	}
 	defer os.Remove(tmpFile.Name())
 
-	//err := awsService.NewUploadFile("bucketName", "local-file.txt", "prefixo", "remote-name.txt")
-	err = awsService.NewUploadFile("bucketName", tmpFile, "prefixo", "remote-name.txt")
+	err = awsService.NewUploadFile("bucketName", tmpFile, "prefix", "remote-name.txt")
 	if err != nil {
 		t.Error(err)
 	}

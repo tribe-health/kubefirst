@@ -22,8 +22,12 @@ func TestAwsHandler_UploadFile(t *testing.T) {
 	if err != nil {
 		t.Error(err)
 	}
+	defer os.RemoveAll(tmpFile.Name())
+
 	err = awsHandler.UploadFile("bucket-name", tmpFile, "", tmpFile.Name())
 	if err != nil {
 		t.Error(err)
 	}
+
+	tmpFile.Close()
 }

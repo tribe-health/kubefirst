@@ -115,8 +115,6 @@ func (handler AwsHandler) UploadFolder(baseFolder string, prefix string, bucketN
 	return nil
 }
 
-type mockHandler struct{}
-
 // UploadFile intermediate the request, and send the request to the service provided in the constructor NewAwsHandler.
 // The handler doesn't know how to upload a file, it only presents his intention, and let the service do the actual job
 // of uploading a file at the service provider provided during the AwsHandler creation.
