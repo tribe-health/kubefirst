@@ -44,11 +44,14 @@ type ARecord struct {
 	AliasTarget *route53Types.AliasTarget
 }
 
+type S3ClientManager interface {
+	Upload(ctx context.Context, input *s3.PutObjectInput, opts ...func(*manager.Uploader)) (*manager.UploadOutput, error)
+}
 type AwsService struct {
-	S3Client *manager.Uploader
+	S3Client S3ClientManager
 }
 
-func NewAwsService(s3Client *manager.Uploader) AwsService {
+func NewAwsService(s3Client S3ClientManager) AwsService {
 	return AwsService{
 		S3Client: s3Client,
 	}
@@ -476,48 +479,6 @@ func UploadFile(bucketName string, remoteFilename string, localFilename string) 
 	)
 	if err != nil {
 		return fmt.Errorf("failed to upload file, %v", err)
-	}
-	log.Printf("file succesfully uploaded to, %s\n", result.Location)
-	return nil
-}
-
-// NewUploadFile receives a bucket name, a file name and upload it to AWS S3.
-func (service AwsService) NewUploadFile(bucketName string, prefix string, localFilename string, remoteFilename string) error {
-
-	file, err := os.Open(localFilename)
-	if err != nil {
-		fmt.Println(localFilename)
-		return fmt.Errorf("failed to open file %q, %v", localFilename, err)
-	}
-
-	// Upload file to S3
-	var result *manager.UploadOutput
-	// todo: test it with prefix like ""
-	if len(prefix) > 0 {
-		result, err = service.S3Client.Upload(
-			context.Background(),
-			&s3.PutObjectInput{
-				Bucket: aws.String(bucketName),
-				Key:    aws.String(filepath.Join(prefix, remoteFilename)),
-				Body:   file,
-			},
-		)
-		if err != nil {
-			return fmt.Errorf("failed to upload file, %v", err)
-		}
-	} else {
-		result, err = service.S3Client.Upload(
-			context.Background(),
-			&s3.PutObjectInput{
-				Bucket: aws.String(bucketName),
-				Key:    aws.String(remoteFilename),
-				Body:   file,
-			},
-		)
-		if err != nil {
-			return fmt.Errorf("failed to upload file, %v", err)
-		}
-
 	}
 	log.Printf("file succesfully uploaded to, %s\n", result.Location)
 	return nil
@@ -998,6 +959,31 @@ func Route53DeleteHostedZone(hostedZoneId string, hostedZoneName string) error {
 	}
 
 	log.Printf("deleted hosted zone id %q, hosted zone name %q\n", hostedZoneId, hostedZoneName)
+
+	return nil
+}
+
+// NewUploadFile receives a bucket name, a file name and upload it to AWS S3.
+func (service AwsService) NewUploadFile(
+	bucketName string,
+	//localFilename string,
+	localFile *os.File,
+	prefix string,
+	remoteFilename string,
+) error {
+
+	// Upload file to S3
+	_, err := service.S3Client.Upload(
+		context.Background(),
+		&s3.PutObjectInput{
+			Bucket: aws.String(bucketName),
+			Key:    aws.String(filepath.Join(prefix, remoteFilename)),
+			Body:   localFile,
+		},
+	)
+	if err != nil {
+		return fmt.Errorf("failed to upload file, %v", err)
+	}
 
 	return nil
 }

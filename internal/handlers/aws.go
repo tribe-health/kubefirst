@@ -1,7 +1,6 @@
 package handlers
 
 import (
-	"fmt"
 	"github.com/kubefirst/kubefirst/internal/flagset"
 	"github.com/kubefirst/kubefirst/internal/services"
 	"io/fs"
@@ -69,11 +68,14 @@ func (handler AwsHandler) HostedZoneDelete(hostedZone string) error {
 	return nil
 }
 
+// UploadFolder receives a folder path, and upload to a service. Parameters are:
+//   - baseFolder local folder path
+//   - prefix destiny folder to host the upload base files
+//   - bucketName name of the destination bucket
 func (handler AwsHandler) UploadFolder(baseFolder string, prefix string, bucketName string) error {
 
 	walker := make(chan string)
 
-	// todo: send it to a function
 	go func() {
 		fileSystem := os.DirFS(baseFolder)
 		err := fs.WalkDir(fileSystem, ".", func(fullFilePath string, folderOrFile fs.DirEntry, err error) error {
@@ -90,32 +92,42 @@ func (handler AwsHandler) UploadFolder(baseFolder string, prefix string, bucketN
 
 	for path := range walker {
 
-		relativeFilePath, err := filepath.Rel(baseFolder, baseFolder+path)
-		if err != nil {
-			return err
-		}
-
-		// os.Stat ?  todo:
+		// open file to be transmitted
 		file, err := os.Open(baseFolder + path)
 		if err != nil {
 			return err
 		}
-		defer file.Close()
 
-		err = handler.Service.NewUploadFile(bucketName, prefix, baseFolder+path, relativeFilePath)
+		fullFilePath := baseFolder + path
+		relativeFilePath, err := filepath.Rel(baseFolder, fullFilePath)
 		if err != nil {
 			return err
 		}
 
-		fmt.Println("upload ok!...")
+		err = handler.Service.NewUploadFile(bucketName, file, prefix, relativeFilePath)
+		if err != nil {
+			return err
+		}
+
+		log.Printf("file %q was uploaded to the %q S3 bucket", fullFilePath, bucketName)
 	}
 
 	return nil
 }
 
-func (handler AwsHandler) UploadFile(bucketName string, prefix string, remoteFilename string, localFilename string) error {
+type mockHandler struct{}
 
-	err := handler.Service.NewUploadFile(bucketName, prefix, remoteFilename, localFilename)
+// UploadFile intermediate the request, and send the request to the service provided in the constructor NewAwsHandler.
+// The handler doesn't know how to upload a file, it only presents his intention, and let the service do the actual job
+// of uploading a file at the service provider provided during the AwsHandler creation.
+func (handler AwsHandler) UploadFile(
+	bucketName string,
+	localFile *os.File,
+	prefix string,
+	remoteFilename string,
+) error {
+
+	err := handler.Service.NewUploadFile(bucketName, localFile, prefix, remoteFilename)
 	if err != nil {
 		return err
 	}

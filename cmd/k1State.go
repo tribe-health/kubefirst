@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"errors"
 	"fmt"
 	"github.com/aws/aws-sdk-go-v2/feature/s3/manager"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
@@ -18,7 +19,7 @@ var k1state = &cobra.Command{
 	Use:   "state",
 	Short: "push and pull Kubefirst configuration to S3 bucket",
 	Long:  `Kubefirst configuration can be handed over to another user by pushing the Kubefirst config files to a S3 bucket.`,
-	Run: func(cmd *cobra.Command, args []string) {
+	RunE: func(cmd *cobra.Command, args []string) error {
 
 		push, err := cmd.Flags().GetBool("push")
 		if err != nil {
@@ -41,15 +42,12 @@ var k1state = &cobra.Command{
 
 		if !push && !pull {
 			fmt.Println(cmd.Help())
-			return
+			return nil
 		}
 
 		if pull && len(region) == 0 {
-			fmt.Println("region is required when pulling Kubefirst config, please add --region <region-name>")
-			return
+			return errors.New("region is required when pulling Kubefirst config, please add --region <region-name>")
 		}
-
-		//
 
 		awsConfig, err := services.NewAws()
 		if err != nil {
@@ -62,18 +60,36 @@ var k1state = &cobra.Command{
 
 		config := configs.ReadConfig()
 		if push {
-			err := awsHandler.UploadFile(bucketName, config.KubefirstConfigFileName, config.KubefirstConfigFilePath, "")
+			// prepare kubefirst file to be uploaded
+			kubeFirstConfigFile, err := os.Open(config.KubefirstConfigFilePath)
 			if err != nil {
-				fmt.Println(err)
-				return
+				return err
 			}
 
+			// call handler to upload a file
+			err = awsHandler.UploadFile(bucketName, kubeFirstConfigFile, "", config.KubefirstConfigFileName)
+			if err != nil {
+				return err
+			}
+
+			// close open file
+			err = kubeFirstConfigFile.Close()
+			if err != nil {
+				return err
+			}
+
+			// pass a folder, and let the handler handles the upload process
 			err = awsHandler.UploadFolder(config.K1FolderPath, "k1/", bucketName)
 			if err != nil {
-				fmt.Println(err)
-				return
+				return err
 			}
-			finalMsg := fmt.Sprintf("Kubefirst configuration file was upload to AWS S3 at %q bucket name", bucketName)
+
+			finalMsg := fmt.Sprintf(
+				"Kubefirst configuration file %q and %q folder was uploaded to AWS S3 at %q bucket name",
+				config.KubefirstConfigFilePath,
+				config.K1FolderPath,
+				bucketName,
+			)
 
 			log.Printf(finalMsg)
 			fmt.Println(reports.StyleMessage(finalMsg))
@@ -84,14 +100,12 @@ var k1state = &cobra.Command{
 			// at this point user doesn't have kubefirst config file and no aws.region
 			viper.Set("aws.region", region)
 			if err := viper.WriteConfig(); err != nil {
-				log.Println(err)
-				return
+				return err
 			}
 
 			err := services.DownloadS3File(bucketName, config.KubefirstConfigFileName)
 			if err != nil {
-				fmt.Println(err)
-				return
+				return err
 			}
 			currentFolder, err := os.Getwd()
 			finalMsg := fmt.Sprintf("Kubefirst configuration file was downloaded to %q/, and is now available to be copied to %q/",
@@ -102,6 +116,7 @@ var k1state = &cobra.Command{
 			log.Printf(finalMsg)
 			fmt.Println(reports.StyleMessage(finalMsg))
 		}
+		return nil
 	},
 }
 
