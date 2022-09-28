@@ -966,7 +966,6 @@ func Route53DeleteHostedZone(hostedZoneId string, hostedZoneName string) error {
 // NewUploadFile receives a bucket name, a file name and upload it to AWS S3.
 func (service AwsService) NewUploadFile(
 	bucketName string,
-	//localFilename string,
 	localFile *os.File,
 	prefix string,
 	remoteFilename string,

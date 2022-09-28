@@ -10,7 +10,7 @@ import (
 func TestAwsHandler_UploadFile(t *testing.T) {
 
 	// mock S3 client
-	s3Client := pkg.MockS3{}
+	s3Client := pkg.MockAWSS3{}
 	awsService := services.AwsService{
 		S3Client: s3Client,
 	}

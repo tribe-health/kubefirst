@@ -49,6 +49,7 @@ var k1state = &cobra.Command{
 			return errors.New("region is required when pulling Kubefirst config, please add --region <region-name>")
 		}
 
+		// AWS configuration request
 		awsConfig, err := services.NewAws()
 		if err != nil {
 			log.Println(err)

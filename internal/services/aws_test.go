@@ -326,7 +326,7 @@ func TestAreEC2VolumesDestroyedIntegration(t *testing.T) {
 func TestAwsServiceNewUploadFile(t *testing.T) {
 
 	// mock S3 client
-	s3Client := pkg.MockS3{}
+	s3Client := pkg.MockAWSS3{}
 	awsService := services.NewAwsService(s3Client)
 
 	// create temporary file for test
