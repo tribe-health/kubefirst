@@ -81,13 +81,13 @@ func ProcessGithubAddCmdFlags(cmd *cobra.Command) (GithubAddCmdFlags, error) {
 		}
 
 	}
-	if owner != "" {
+	if user != "" {
 		flags.GithubEnable = true
 	}
 	flags.GithubOwner = owner
 	flags.GithubOrg = org
 	flags.GithubUser = user
-	viper.Set("github.enabled", flags.GithubEnable)
+	// viper.Set("github.enabled", flags.GithubEnable) #! JD
 	viper.Set("github.host", flags.GithubHost)
 	viper.Set("github.org", flags.GithubOrg)
 	viper.Set("github.owner", flags.GithubOwner)

@@ -34,20 +34,21 @@ validated and configured.`,
 		infoCmd.Run(cmd, args)
 		config := configs.ReadConfig()
 
-		globalFlags, githubFlags, installerFlags, awsFlags, err := flagset.InitFlags(cmd)
-		if err != nil {
-			return err
-		}
-
 		//Please don't change the order of this block, wihtout updating
-		// internal/flagset/init_test.go
+		// internal/flagset/init_test.go <- :heart:
 
 		if err := pkg.ValidateK1Folder(config.K1FolderPath); err != nil {
 			return err
 		}
 
-		if viper.GetString("cloud") == flagset.CloudK3d {
-			if config.GitHubPersonalAccessToken == "" && !globalFlags.SilentMode {
+		// command line flags
+		cloudValue, err := cmd.Flags().GetString("cloud")
+		if err != nil {
+			return err
+		}
+
+		if cloudValue == flagset.CloudK3d {
+			if config.GitHubPersonalAccessToken == "" {
 
 				httpClient := http.DefaultClient
 				gitHubService := services.NewGitHubService(httpClient)
@@ -67,6 +68,11 @@ validated and configured.`,
 				}
 				log.Println("\nGITHUB_AUTH_TOKEN set via OAuth")
 			}
+		}
+
+		globalFlags, githubFlags, installerFlags, awsFlags, err := flagset.InitFlags(cmd)
+		if err != nil {
+			return err
 		}
 
 		if globalFlags.SilentMode {

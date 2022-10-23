@@ -4,12 +4,13 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"os/exec"
+	"syscall"
+
 	"github.com/go-git/go-git/v5/plumbing"
 	"github.com/kubefirst/kubefirst/internal/gitClient"
 	"github.com/kubefirst/kubefirst/internal/githubWrapper"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"os/exec"
-	"syscall"
 
 	"log"
 	"time"
@@ -256,10 +257,10 @@ cluster provisioning process spinning up the services, and validates the livenes
 
 		*/
 		// 1
-		err = replaceS3Backend()
-		if err != nil {
-			return err
-		}
+		// err = replaceS3Backend()
+		// if err != nil {
+		// 	return err
+		// }
 		//
 		// 2 git push to new repo
 		////ref := plumbing.NewHashReference("refs/heads/update-s3-backend", headRef.Hash())
