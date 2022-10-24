@@ -27,6 +27,7 @@ var infoCmd = &cobra.Command{
 		infoSummary.WriteString("\nInfo summary:\n")
 		infoSummary.WriteString(strings.Repeat("-", 70))
 
+		// todo review this
 		infoSummary.WriteString(fmt.Sprintf("\n\nOperational System: %s\n", config.LocalOs))
 		infoSummary.WriteString(fmt.Sprintf("Architecture: %s\n", config.LocalArchitecture))
 		infoSummary.WriteString(fmt.Sprintf("Go Lang version: v%s \n", runtime.Version()))

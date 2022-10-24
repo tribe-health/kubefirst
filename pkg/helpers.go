@@ -111,7 +111,7 @@ func DetokenizeDirectory(path string, fi os.FileInfo, err error) error {
 		//Please, don't remove comments on this file unless you added it
 		// todo should Detokenize be a switch statement based on a value found in viper?
 		gitlabConfigured := viper.GetBool("gitlab.keyuploaded")
-		
+
 		newContents := string(read)
 
 		botPublicKey := viper.GetString("botpublickey")
@@ -134,7 +134,7 @@ func DetokenizeDirectory(path string, fi os.FileInfo, err error) error {
 
 		//TODO: We need to fix this
 		githubToken := os.Getenv("GITHUB_AUTH_TOKEN")
-		
+
 		//todo: get from viper
 		gitopsRepo := "gitops"
 		repoPathHTTPSGitlab := "https://gitlab." + hostedZoneName + "/kubefirst/" + gitopsRepo
@@ -250,7 +250,7 @@ func SetupViper(config *configs.Config) error {
 
 	if _, err := os.Stat(viperConfigFile); errors.Is(err, os.ErrNotExist) {
 		log.Printf("Config file not found, creating a blank one: %s \n", viperConfigFile)
-		err = os.WriteFile(viperConfigFile, []byte("createdBy: installer\n\n"), 0700)
+		err = os.WriteFile(viperConfigFile, []byte("createdBy: kubefirst-cli\n\n"), 0700)
 		if err != nil {
 			return fmt.Errorf("unable to create blank config file, error is: %s", err)
 		}

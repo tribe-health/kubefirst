@@ -39,6 +39,9 @@ type Config struct {
 	TerraformClientPath     string
 	K3dPath                 string
 	ConsoleVersion          string
+	ArgoCDLocalURL          string
+	ArgoWorkflowsLocalURL   string
+	VaultLocalURL           string
 
 	HostedZoneName string `env:"HOSTED_ZONE_NAME"`
 	ClusterName    string `env:"CLUSTER_NAME"`
@@ -85,6 +88,10 @@ func ReadConfig() *Config {
 
 	config.LocalOs = runtime.GOOS
 	config.LocalArchitecture = runtime.GOARCH
+
+	config.ArgoCDLocalURL = "http://localhost:8080"
+	config.ArgoWorkflowsLocalURL = "http://localhost:2746"
+	config.VaultLocalURL = "http://localhost:8200"
 
 	config.KubectlClientPath = fmt.Sprintf("%s/tools/kubectl", config.K1FolderPath)
 	config.KubeConfigPath = fmt.Sprintf("%s/gitops/terraform/base/kubeconfig", config.K1FolderPath)
