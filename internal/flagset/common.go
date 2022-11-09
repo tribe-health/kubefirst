@@ -97,6 +97,7 @@ func GetConfig(flag string) string {
 // InjectConfigs - Append configs from a new source to the main viper file.
 func InjectConfigs(extraConfig string) {
 	//Workaround due to: https://github.com/spf13/viper/issues/181
+	log.Println("importing config")
 	var v = viper.New()
 	v.SetConfigType("yaml")
 	v.SetConfigFile(extraConfig)

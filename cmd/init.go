@@ -33,17 +33,15 @@ validated and configured.`,
 		infoCmd.Run(cmd, args)
 		config := configs.ReadConfig()
 
-		//Please don't change the order of this block, wihtout updating
-		// internal/flagset/init_test.go
-
-		if err := pkg.ValidateK1Folder(config.K1FolderPath); err != nil {
+		// github or gitlab
+		globalFlags, _, installerFlags, awsFlags, err := flagset.InitFlags(cmd)
+		if err != nil {
+			log.Println("error processing flags for init")
 			return err
 		}
 
-		// github or gitlab
-		globalFlags, _, installerFlags, awsFlags, err := flagset.InitFlags(cmd)
-
-		if err != nil {
+		if err := pkg.ValidateK1Folder(config.K1FolderPath); err != nil {
+			log.Println("error: ValidateK1Folder", err)
 			return err
 		}
 
@@ -57,6 +55,7 @@ validated and configured.`,
 		if viper.GetString("cloud") != flagset.CloudAws {
 			log.Println("Not cloud mode attempt to create using cloud cli")
 			if err != nil {
+				log.Println("error: Invalid install type", err)
 				return fmt.Errorf("not support mode of install via this command, only cloud install supported")
 			}
 		}

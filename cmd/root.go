@@ -2,9 +2,10 @@ package cmd
 
 import (
 	"fmt"
+	"os"
+
 	"github.com/kubefirst/kubefirst/cmd/local"
 	"github.com/kubefirst/kubefirst/configs"
-	"os"
 
 	"github.com/kubefirst/kubefirst/internal/progressPrinter"
 	"github.com/spf13/cobra"
